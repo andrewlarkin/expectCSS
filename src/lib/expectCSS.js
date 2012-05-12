@@ -7,7 +7,7 @@ var ExpectCSS = (function(){
         },
 
         verify: function(elementString) {
-            var classes, id, testObj, i;
+            var classes, id, attrs, attrValue, tempAttr, attrObj = {}, testObj, i;
 
             //Gets the class names from the string
             classes = elementString.match(/\.[A-Za-z]*/g);
@@ -19,26 +19,58 @@ var ExpectCSS = (function(){
 
                 classes = classes.join(' ');
                 classes = classes.replace(/\./g, ''); //strip out the '.'
+                attrObj.className = classes;
             }
 
             //Gets the id tag from the string
             id = elementString.match(/#[A-Za-z]*/);
 
             if (id) {
-                id = id.toString();
+                id = id.toString(); //convert array to string
 
                 elementString = elementString.replace(id, '');
 
                 id = id.replace('#', '');
+                attrObj.id = id;
             }
 
+            //Gets the attribute selectors from the string
+            attrs = elementString.match(/\[([^\]]*)\]/g);
+
+            //iterate through attributes
+            if (attrs) {
+                for (i = 0; i < attrs.length; i += 1){
+                    //remove the attribute from the element string
+                    elementString = elementString.replace(attrs[i], '');
+                    //strip brackets and quotes
+                    attrs[i] = attrs[i].replace(/[\[\]"']/g, '');
+
+                    if (attrs[i].match('~=')) {
+                        tempAttr = attrs[i].split(/~=/);
+                        attrValue = !(tempAttr[1]);
+                    } else if (attrs[i].match(/\|=/)) {
+                        tempAttr = attrs[i].split('|=');
+                        attrValue = tempAttr[1];
+                    } else {
+                        tempAttr = attrs[i].split('=');
+                        attrValue = tempAttr[1] || true;;
+                    }
+
+                    //if value, assign it to property
+                    //else assign property as true
+                    attrObj[tempAttr[0]] = attrValue;
+                }
+            }
+
+            elementString = (elementString === '') ? 'div' : elementString;
+
             //Gets attribute names from the string
-
-
             testObj = document.createElement(elementString);
 
-            testObj.className = classes;
-            testObj.id = id;
+            var attr;
+            for (attr in attrObj) {
+                testObj[attr] = attrObj[attr];
+            }
 
             return testObj;
         }
@@ -57,3 +89,29 @@ var ExpectCSS = (function(){
 //
 //Need to be able to handle attributes
 //Need to validate nested properties
+//
+//possible pseudo-classes to consider: 
+//  first-child
+//  first-line
+//  first-letter
+//  hover
+//  active
+//  link
+//  visited
+//  before
+//  after
+//  lang
+//
+//and attributes to cosider:
+//  [foo]
+//  [foo="bar"]
+//  [foo~="bar"]
+//  [foo|="bar"]
+//
+//also consider:
+//  E F (decendant)
+//  E > F (child)
+//  E + F (adjacent siblings)
+//  *
+//
+//
