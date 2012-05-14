@@ -1,5 +1,11 @@
-div.test {
+/* a css comment */
+div.test .someClass {
     display: block;
     font-size: 14px;
     background-color: #ff0000;
+}
+
+#someId {
+    background: transparent;
+    font-weight: bold;
 }

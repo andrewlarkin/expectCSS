@@ -3,7 +3,13 @@ var ExpectCSS = (function(){
     var ExpectCSS = {
 
         load: function(path) {
+            var linkObj = document.createElement('link');
 
+            linkObj.setAttribute("rel", "stylesheet");
+            linkObj.setAttribute("type", "text/css");
+            linkObj.setAttribute("href", path);
+
+            document.head.appendChild(linkObj);
         },
 
         verify: function(elementString) {
@@ -85,7 +91,7 @@ var ExpectCSS = (function(){
 //for example: if the test is #someId div.someClass then it should create the element:
 //  <div id="someId"><div class="someClass"></div></div>
 //
-//  verify('div.someClass #someId').toBe({ display: 'none', border: '1px solid #000'});
+//  verify('div.someClass #someId').toBe({ display: 'nwone', border: '1px solid #000'});
 //
 //Need to be able to handle attributes
 //Need to validate nested properties
