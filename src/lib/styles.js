@@ -1,21 +1,20 @@
-define('styles', ['fs', 'observer'], function(fs, observer){
+define('styles', ['fs', 'observer', 'rule'], function(fs, observer, Rule){
 
-    var cachedStyles = {},
-
-        trim = function(string){  //trim whitespace
+    var trim = function(string){  //trim whitespace
             return string.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
         };
 
     var styles = {
-        set: function(rule, property, value){
-            cachedStyles[rule] = cachedStyles[rule] || {};
 
-            cachedStyles[rule][property] = value;
+        setRule: function(selector, rule) {
+            this.rules[selector] = rule;
         },
 
-        get: function(rule){
-            return cachedStyles[rule];
+        getRule: function(selector){
+            return this.rules[selector]; //each rule object should be a class...
         },
+
+        rules: {},
 
         load: function(path) {
             if (!path.match('.css')) {
@@ -25,16 +24,42 @@ define('styles', ['fs', 'observer'], function(fs, observer){
 
             fs.readFile(path, 'ascii', function(err, data) {
                 if (err) {
-                    console.log(err);
-                    throw err;
+                    console.log('Unable to locate ' + path);
+                    return;
                 }
 
-                observer.emit('cssLoaded');
+                observer.emit('cssLoaded', data);
             });
         },
 
-        parseCss: function(){
-            return false;
+        parseCss: function(data){
+            var penBracketPos, closeBracketPos,
+                selector, rule;
+
+            openBracketPos = data.indexOf('{');
+            closeBracketPos = data.indexOf('}');
+
+            while (openBracketPos !== -1 && closeBracketPos !== -1) {
+
+                if (penBracketPos > closeBracketPos) {
+                    break;
+                }
+
+                selector = trim(data.slice(0, openBracketPos));
+
+                rule = this.getRule(selector) || new Rule(selector); //This needs to be changed to create a new Rule instance
+
+                rule.buildProperties(data.slice(openBracketPos + 1, closeBracketPos));
+
+                    //set rule
+                this.setRule(selector, rule);
+                    //strip out this rule
+                data = data.substr(closeBracketPos + 1);
+                    //update bracket pos
+                openBracketPos = data.indexOf('{');
+                closeBracketPos = data.indexOf('}');
+            };
+
         }
     };
 

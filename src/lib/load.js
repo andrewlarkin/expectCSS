@@ -35,7 +35,9 @@ define('load', ['fs', 'styles'], function(fs, styles){
                 i = 0;
                 bracketPos = 0;
             }
-        }       
+        }
+
+        return true;
     },
 
     splitProperties = function(data) {
