@@ -57,11 +57,37 @@ requirejs(['styles', 'observer', 'rule'], function(styles, observer, Rule){
             });
         });
 
+        describe('While resetting the styles module...', function(){
+            it('clears all styles when the reset method is called', function(){
+                var someRule = new Rule('someRule'),
+                    anotherRule = new Rule('anotherRule');
+                styles.setRule(someRule);
+                styles.setRule(anotherRule);
+
+                expect(styles.getRule('someRule')).toBe(someRule);
+                expect(styles.getRule('anotherRule')).toBe(anotherRule);
+
+                styles.reset();
+
+                expect(styles.getRule('someRule')).toBeUndefined();
+                expect(styles.getRule('anotherRule')).toBeUndefined();
+            });
+        });
+
         describe('While parsing the css string...', function(){
-            var cssString = '.someClass {' +
+            var cssString;
+
+            beforeEach(function(){
+                cssString = '.someClass {' +
                                 'display: none;' +
                                 'background: transparent;' +
                             '}';
+
+            });
+
+            afterEach(function(){
+                styles.reset();
+            });
 
             it('does not loop infinitely if there are no brackets in the string', function(){
                 expect(styles.parseCss('no brackets')).toBeUndefined();
@@ -75,15 +101,17 @@ requirejs(['styles', 'observer', 'rule'], function(styles, observer, Rule){
                 expect(styles.getRule).toHaveBeenCalledWith('.someClass');
             });
 
-            describe('...but the rule does not yet exist...', function(){
+            xdescribe('...but the rule does not yet exist...', function(){
                 it('creates a new instance of the Rule class', function(){
-                    
+                    spyOn('Rule');
+
+                    expect(Rule).toHaveBeenCalledWith('.someClass');
                 });
             });
         });
 
         //TODO: Test setter
         //
-        //TODO: Test getter
+        //TODO: Test getter 
     });
 });

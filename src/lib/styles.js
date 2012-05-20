@@ -6,8 +6,8 @@ define('styles', ['fs', 'observer', 'rule'], function(fs, observer, Rule){
 
     var styles = {
 
-        setRule: function(selector, rule) {
-            this.rules[selector] = rule;
+        setRule: function(rule) {
+            this.rules[rule.name] = rule;
         },
 
         getRule: function(selector){
@@ -60,6 +60,10 @@ define('styles', ['fs', 'observer', 'rule'], function(fs, observer, Rule){
                 closeBracketPos = data.indexOf('}');
             };
 
+        },
+
+        reset: function(){
+            this.rules = {};
         }
     };
 
