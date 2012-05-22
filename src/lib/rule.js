@@ -1,7 +1,9 @@
 define('rule', function(){
     //TODO: promote this to a utility class
     var trim = function(string){  //trim whitespace
-            return string.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+            if (string) {
+                return string.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+            }
         };
 
     //A class to generate a rule object, which can be modified to add new properties and verify against expected properties
@@ -15,7 +17,9 @@ define('rule', function(){
         this.setProperty = function(property, value){
             //TODO: set warning if a property is overwritten
             //TODO: set 'sub-properties' such as border-width, border-weight, etc
-            this.styles[property] = value;
+            if (property) {
+                this.styles[property] = value;
+            }
         };
 
         this.getProperty = function(property) {

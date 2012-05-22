@@ -69,6 +69,8 @@ define('load', ['fs', 'styles'], function(fs, styles){
             return false;
         }
 
+        console.log('here!');
+
         fs.readFile(cssPath, 'ascii', function(err, data){
             if (err) throw err;
             //if file is present

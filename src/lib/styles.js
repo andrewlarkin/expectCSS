@@ -1,7 +1,9 @@
 define('styles', ['fs', 'observer', 'rule'], function(fs, observer, Rule){
 
     var trim = function(string){  //trim whitespace
-            return string.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+            if (string && string !== '') {
+                return string.replace(/^\s\s*/, '').replace(/\s\s*$/, '');
+            }
         };
 
     var styles = {
@@ -17,6 +19,7 @@ define('styles', ['fs', 'observer', 'rule'], function(fs, observer, Rule){
         rules: {},
 
         load: function(path) {
+
             if (!path.match('.css')) {
                 console.log('File must be a valid CSS file');
                 return;
@@ -27,6 +30,9 @@ define('styles', ['fs', 'observer', 'rule'], function(fs, observer, Rule){
                     console.log('Unable to locate ' + path);
                     return;
                 }
+
+                //strip out all comments
+                data = data.replace(/\/\*.*\*\//, '');
 
                 observer.emit('cssLoaded', data);
             });
@@ -52,7 +58,7 @@ define('styles', ['fs', 'observer', 'rule'], function(fs, observer, Rule){
                 rule.buildProperties(data.slice(openBracketPos + 1, closeBracketPos));
 
                     //set rule
-                this.setRule(selector, rule);
+                this.setRule(rule);
                     //strip out this rule
                 data = data.substr(closeBracketPos + 1);
                     //update bracket pos
@@ -60,6 +66,33 @@ define('styles', ['fs', 'observer', 'rule'], function(fs, observer, Rule){
                 closeBracketPos = data.indexOf('}');
             };
 
+            observer.emit('runnerComplete', this.rules);
+
+        },
+
+        match: function(selector) {
+            var selectorSegments = selector.split(' '),
+                segmentsLength = selectorSegments.length,
+                ruleSegments,
+                ruleSegmentsLength,
+                matches = [],
+                bestMatch,
+                ruleName,
+                i, j;
+
+            for (ruleName in this.rules) {
+                ruleSegments = ruleName.split(' ');
+                ruleSegmentsLength = ruleSegments.length;
+
+                if (selectorSegments[segmentsLength - 1] !== ruleSegments[ruleSegmentsLength - 1]) {
+                    continue;
+                }
+
+                //TODO: need to check the last segment for specificity
+                matches.push(this.rules[ruleName]);
+            }
+
+            return matches;
         },
 
         reset: function(){
