@@ -2,9 +2,9 @@ load('src/examples/test.css');
 
 expect('.someClass').
     toHaveProperties({
-        display: 'none',
+        display: 'block',
         color: 'white'
-    });
+    }).toBeOverridden();
     
 /*
 expect('.someClass', function(){
