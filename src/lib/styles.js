@@ -8,11 +8,11 @@ define('styles', ['fs', 'observer', 'rule'], function(fs, observer, Rule){
 
     var styles = {
 
-        setRule: function(rule) {
+        store: function(rule) {
             this.rules[rule.name] = rule;
         },
 
-        getRule: function(selector){
+        retrieve: function(selector){
             return this.rules[selector]; //each rule object should be a class...
         },
 
@@ -31,14 +31,14 @@ define('styles', ['fs', 'observer', 'rule'], function(fs, observer, Rule){
                     return;
                 }
 
-                //strip out all comments
+                //TODO: Instead of stripping out comments, parse them for tests, then strip them out.
                 data = data.replace(/\/\*.*\*\//, '');
 
                 observer.emit('cssLoaded', data);
             });
         },
 
-        parseCss: function(data){
+        parse: function(data){
             var penBracketPos, closeBracketPos,
                 selector, rule;
 
@@ -53,21 +53,18 @@ define('styles', ['fs', 'observer', 'rule'], function(fs, observer, Rule){
 
                 selector = trim(data.slice(0, openBracketPos));
 
-                rule = this.getRule(selector) || new Rule(selector); //This needs to be changed to create a new Rule instance
+                rule = this.retrieve(selector) || new Rule(selector); //This needs to be changed to create a new Rule instance
 
                 rule.buildProperties(data.slice(openBracketPos + 1, closeBracketPos));
 
                     //set rule
-                this.setRule(rule);
+                this.store(rule);
                     //strip out this rule
                 data = data.substr(closeBracketPos + 1);
                     //update bracket pos
                 openBracketPos = data.indexOf('{');
                 closeBracketPos = data.indexOf('}');
             };
-
-            observer.emit('runnerComplete', this.rules);
-
         },
 
         match: function(selector) {
@@ -101,7 +98,7 @@ define('styles', ['fs', 'observer', 'rule'], function(fs, observer, Rule){
     };
 
     observer.on('cssLoaded', function(data){
-        styles.parseCss(trim(data));
+        styles.parse(trim(data));
     });
 
     return styles;

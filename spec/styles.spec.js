@@ -36,7 +36,7 @@ requirejs(['styles', 'observer', 'rule'], function(styles, observer, Rule){
                     test = data;
                 });
 
-                spyOn(styles, 'parseCss');
+                spyOn(styles, 'parse');
 
                 styles.load(testFile);
 
@@ -44,16 +44,16 @@ requirejs(['styles', 'observer', 'rule'], function(styles, observer, Rule){
 
                 runs(function(){
                     expect(test).not.toBeUndefined();
-                    expect(styles.parseCss).toHaveBeenCalled();
+                    expect(styles.parse).toHaveBeenCalled();
                 });
             });
 
             it('trims whitespace from the data before parsing it', function(){
-                spyOn(styles, 'parseCss');
+                spyOn(styles, 'parse');
 
                 observer.emit('cssLoaded', '   some string    ');
 
-                expect(styles.parseCss).toHaveBeenCalledWith('some string');
+                expect(styles.parse).toHaveBeenCalledWith('some string');
             });
         });
 
@@ -61,16 +61,16 @@ requirejs(['styles', 'observer', 'rule'], function(styles, observer, Rule){
             it('clears all styles when the reset method is called', function(){
                 var someRule = new Rule('someRule'),
                     anotherRule = new Rule('anotherRule');
-                styles.setRule(someRule);
-                styles.setRule(anotherRule);
+                styles.store(someRule);
+                styles.store(anotherRule);
 
-                expect(styles.getRule('someRule')).toBe(someRule);
-                expect(styles.getRule('anotherRule')).toBe(anotherRule);
+                expect(styles.retrieve('someRule')).toBe(someRule);
+                expect(styles.retrieve('anotherRule')).toBe(anotherRule);
 
                 styles.reset();
 
-                expect(styles.getRule('someRule')).toBeUndefined();
-                expect(styles.getRule('anotherRule')).toBeUndefined();
+                expect(styles.retrieve('someRule')).toBeUndefined();
+                expect(styles.retrieve('anotherRule')).toBeUndefined();
             });
         });
 
@@ -90,28 +90,37 @@ requirejs(['styles', 'observer', 'rule'], function(styles, observer, Rule){
             });
 
             it('does not loop infinitely if there are no brackets in the string', function(){
-                expect(styles.parseCss('no brackets')).toBeUndefined();
+                expect(styles.parse('no brackets')).toBeUndefined();
             });
 
             it('gets a selector string if the rule is well-formed (has brackets)', function(){
-                spyOn(styles, 'getRule');
+                spyOn(styles, 'retrieve');
 
-                styles.parseCss(cssString);
+                styles.parse(cssString);
 
-                expect(styles.getRule).toHaveBeenCalledWith('.someClass');
+                expect(styles.retrieve).toHaveBeenCalledWith('.someClass');
             });
 
-            xdescribe('...but the rule does not yet exist...', function(){
+            describe('...but the rule does not yet exist...', function(){
                 it('creates a new instance of the Rule class', function(){
-                    spyOn('Rule');
+                    expect(styles.retrieve('someClass')).toBeUndefined();
 
-                    expect(Rule).toHaveBeenCalledWith('.someClass');
+                    styles.parse(cssString);
+
+                    expect(styles.retrieve('.someClass')).not.toBeUndefined();
                 });
             });
+
         });
 
-        //TODO: Test setter
-        //
-        //TODO: Test getter 
+        describe('When storing a rule...', function(){
+            it('stores a rule using the rule name as a key', function(){
+                var rule = new Rule('.someClass');
+
+                styles.store(rule);
+
+                expect(styles.retrieve('.someClass')).toBe(rule);
+            });
+        });
     });
 });
